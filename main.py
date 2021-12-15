@@ -9,20 +9,21 @@ folder = Folder()
 searchEngine = SearchEngine()
 searchQuery = Query()
 pos = searchEngine.createPositionalIndex()
-pprint.pprint(pos)
-
-# searchEngine.df_format()
+print("Positional Index")
+searchEngine.df_format(pos)
 
 tfIdf = TF_IDF()
+# print("Term Frequency")
 tf = tfIdf.computeTF()
-pprint.pprint(tf)
+# tfIdf.tf_format(tf)
+# print("Inverse Document Frequency")
 idf = tfIdf.computeIDF()
-pprint.pprint(idf)
-
+# tfIdf.idf_format(idf)
+#
 tf_idf = tfIdf.computeTFIDF(tf, idf)
-pprint.pprint(tf_idf)
+# tfIdf.tf_idf_format(tf_idf)
 
 searchKey = input("Enter a word to search for it: ")
 result = searchQuery.Matching_Query(searchKey)
-print(result)
+pprint.pprint(result)
 

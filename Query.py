@@ -80,3 +80,5 @@ class Query:
                 self.termQueryFreq[term] = 1
 
         return self.termQueryFreq
+
+

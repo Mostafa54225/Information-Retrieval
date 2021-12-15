@@ -6,6 +6,11 @@ import string
 from config import Folder
 import pandas as pd
 
+pd.set_option('display.max_rows', None)
+pd.set_option('display.max_columns', None)
+pd.set_option('display.width', None)
+pd.set_option('display.max_colwidth', None)
+
 
 class SearchEngine:
     # folder_names = ["Documents"]
@@ -93,18 +98,20 @@ class SearchEngine:
                 self.fileNo += 1
         return self.pos_index
 
-    def df_format(self):
-        terms_list = list(self.pos_index.keys())
+    def df_format(self, positionalIndex):
+        terms_list = list(positionalIndex.keys())
         doc_freq_list = []
         # doc_ids =[]
         # positions = []
         Doc_ids_Positions = []
         for term in terms_list:
-            doc_freq_list.append(self.pos_index[term][0])
+            doc_freq_list.append(positionalIndex[term][0])
             # doc_ids.append(list(Positional_index[term][1].keys()))
             # positions.append(list(Positional_index[term][1].values()))
-            Doc_ids_Positions.append(self.pos_index[term][1])
+            Doc_ids_Positions.append(positionalIndex[term][1])
 
         data = {'Term': terms_list, 'Doc_Freq': doc_freq_list, ' Doc_Ids : [Positions] ': Doc_ids_Positions}
         df = pd.DataFrame(data, columns=['Term', 'Doc_Freq', ' Doc_Ids : [Positions] '])
         print(df)
+
+
