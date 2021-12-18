@@ -4,6 +4,9 @@ from nltk.tokenize import word_tokenize
 from natsort import natsorted
 import string
 from config import Folder
+# from sklearn.metrics.pairwise import cosine_similarity
+from sklearn.feature_extraction.text import CountVectorizer
+import numpy as np
 import pandas as pd
 
 pd.set_option('display.max_rows', None)
@@ -101,17 +104,30 @@ class SearchEngine:
     def df_format(self, positionalIndex):
         terms_list = list(positionalIndex.keys())
         doc_freq_list = []
-        # doc_ids =[]
-        # positions = []
         Doc_ids_Positions = []
         for term in terms_list:
             doc_freq_list.append(positionalIndex[term][0])
-            # doc_ids.append(list(Positional_index[term][1].keys()))
-            # positions.append(list(Positional_index[term][1].values()))
             Doc_ids_Positions.append(positionalIndex[term][1])
 
         data = {'Term': terms_list, 'Doc_Freq': doc_freq_list, ' Doc_Ids : [Positions] ': Doc_ids_Positions}
         df = pd.DataFrame(data, columns=['Term', 'Doc_Freq', ' Doc_Ids : [Positions] '])
         print(df)
 
+    def countWordsInEachDoc(self):
+        f = Folder()
+        docs = f.getDocs()
 
+        count_vectorizer = CountVectorizer(stop_words='english')
+        count_vectorizer = CountVectorizer()
+        sparse_matrix = count_vectorizer.fit_transform(docs)
+
+        # OPTIONAL: Convert Sparse Matrix to Pandas Dataframe if you want to see the word frequencies.
+        doc_term_matrix = sparse_matrix.todense()
+
+        doc_term_matrix = np.transpose(doc_term_matrix)
+
+        df = pd.DataFrame(doc_term_matrix,
+                          columns=f.fileNames(self.folder.folder_names),
+                          index=count_vectorizer.get_feature_names())
+        # print(doc_term_matrix[0])   # keys => columns  index => terms  doc_term_matrix term array
+        return df, doc_term_matrix

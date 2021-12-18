@@ -66,10 +66,13 @@ class TF_IDF:
         for term in self.pos_index:
             if self.pos_index[term][1] is not None:
                 # DF for a term = self.pos_index[term][0]
-                n = np.log10(self.folder.numberOfDocs(self.folder.folder_names) / self.pos_index[term][0])
+                n = np.log10(self.folder.numberOfDocs(self.folder.folder_names) / self.computeDF(term))
                 idf[term] = round(n, 5)
 
         return idf
+
+    def computeDF(self, term):
+        return self.pos_index[term][0]
 
     def computeTFIDF(self, tf, idf):
         tfIdf = {}
@@ -109,3 +112,7 @@ class TF_IDF:
         data = {'Term': terms_list, ' Doc_ID: TF_IDF ': tf_idf}
         df = pd.DataFrame(data, columns=['Term', ' Doc_ID: TF_IDF '])
         print(df)
+
+
+
+
