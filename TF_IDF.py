@@ -42,7 +42,7 @@ class TF_IDF:
                 self.docs.append(final_token_list)
         return self.docs
 
-    def computeTF(self):
+    def compute_weight_TF(self):
         docs = self.getDocs()
         tf = {}
         docSize = []
@@ -54,7 +54,8 @@ class TF_IDF:
 
                 if self.pos_index[term][1].get(docId + 1) is not None:
                     # term frequency TF => len(self.pos_index[term][1].get(docId + 1))
-                    tfNo = len(self.pos_index[term][1].get(docId + 1)) / docSize[docId]
+                    tfNo = 1 + np.log10(len(self.pos_index[term][1].get(docId + 1)))
+                    # print(docSize[docId])
                     checkTermInObject(term, tf, docId, round(tfNo, 5))
 
                 else:
@@ -74,7 +75,7 @@ class TF_IDF:
     def computeDF(self, term):
         return self.pos_index[term][0]
 
-    def computeTFIDF(self, tf, idf):
+    def computeTFIDF_weight(self, tf, idf):
         tfIdf = {}
         for term in tf:
             for docId in range(self.folder.numberOfDocs(self.folder.folder_names)):
@@ -83,36 +84,52 @@ class TF_IDF:
 
         return tfIdf
 
+    def normalized_tfidf(self, tf_idf, document_length):
+        normalized_tf_idf = {}
+        docs_length = list(document_length.values())
+        for i in range(len(docs_length)):
+            for term in tf_idf:
+                n_tfidf = tf_idf[term][0].get(i + 1) / docs_length[i]
+                checkTermInObject(term, normalized_tf_idf, i, round(n_tfidf, 5))
+
+        return normalized_tf_idf
+
     def tf_format(self, tf):
         terms_list = list(tf.keys())
         tfNo = []
         for term in terms_list:
-            tfNo.append(tf[term][0])
+            tfNo.append(list(tf[term][0].values()))
 
-        data = {'Term': terms_list, ' Doc_ID: TF ': tfNo}
-        df = pd.DataFrame(data, columns=['Term', ' Doc_ID: TF '])
+        df = pd.DataFrame(tfNo, columns=self.folder.fileNames(self.folder.folder_names), index=terms_list)
         print(df)
 
     def idf_format(self, idf):
         terms_list = list(idf.keys())
         tfNo = []
+        dfTerms = []
         for term in terms_list:
             tfNo.append(idf[term])
+            dfTerms.append(self.computeDF(term))
 
-        data = {'Term': terms_list, ' IDF ': tfNo}
-        df = pd.DataFrame(data, columns=['Term', ' IDF '])
+        data = {'Term ': terms_list, ' df ': dfTerms, ' IDF ': tfNo}
+        df = pd.DataFrame(data, columns=['Term ', ' df ', ' IDF '])
         print(df)
 
     def tf_idf_format(self, tfIDF):
         terms_list = list(tfIDF.keys())
         tf_idf = []
         for term in terms_list:
-            tf_idf.append(tfIDF[term][0])
+            tf_idf.append(list(tfIDF[term][0].values()))
 
-        data = {'Term': terms_list, ' Doc_ID: TF_IDF ': tf_idf}
-        df = pd.DataFrame(data, columns=['Term', ' Doc_ID: TF_IDF '])
+        df = pd.DataFrame(tf_idf, columns=self.folder.fileNames(self.folder.folder_names), index=terms_list)
         print(df)
 
+    def normalized_tf_idf_format(self, normalized_tfidf):
+        terms_list = list(normalized_tfidf.keys())
+        n_tf_idf = []
+        for term in terms_list:
+            n_tf_idf.append((list(normalized_tfidf[term][0].values())))
+        print(n_tf_idf)
 
-
-
+        df = pd.DataFrame(n_tf_idf, columns=self.folder.fileNames(self.folder.folder_names), index=terms_list)
+        print(df)

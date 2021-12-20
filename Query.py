@@ -1,11 +1,9 @@
 from SearchEngine import SearchEngine
 import numpy as np
-from nltk.tokenize import word_tokenize
 import pandas as pd
 from config import Folder
 from sklearn.feature_extraction.text import CountVectorizer
-from natsort import natsorted
-import os
+
 
 
 def column(matrix, i):
@@ -66,24 +64,27 @@ class Query:
         j = -1
         result = []
         store_terms = self.Dict_KeyID_similar_terms(query)
-        if len(store_terms) == 1:
-            return store_terms[0]
-        else:
-            for i in range(len(store_terms)):
-                if i == 0:
-                    store1 = store_terms[i][1][1]
-                    store2 = store_terms[i + 1][1][1]
-                    result.append(self.intersect_docs(store1, store2))
-                    j += 1
-                elif i == 1:
-                    continue
-                else:
-                    store1 = result[j]
-                    store2 = store_terms[i][1][1]
-                    result.append(self.intersect_docs(store1, store2))
-                    j += 1
-                # print(result)
-        return result[j - 1]
+        try:
+            if len(store_terms) == 1:
+                return store_terms[0]
+            else:
+                for i in range(len(store_terms)):
+                    if i == 0:
+                        store1 = store_terms[i][1][1]
+                        store2 = store_terms[i + 1][1][1]
+                        result.append(self.intersect_docs(store1, store2))
+                        j += 1
+                    elif i == 1:
+                        continue
+                    else:
+                        store1 = result[j]
+                        store2 = store_terms[i][1][1]
+                        result.append(self.intersect_docs(store1, store2))
+                        j += 1
+                    # print(result)
+            return result[j - 1]
+        except:
+            return "Not Found"
 
     def duplicate_terms_in_query(self, q):
         query = self.document_class.preprocessing(q)
@@ -98,7 +99,8 @@ class Query:
     def cosine_similarity(self, query):
         docs = self.folder.getDocs()
 
-        query = word_tokenize(query)
+        query = self.document_class.preprocessing(query)
+        print(query)
         df, s = self.document_class.countWordsInEachDoc()
         docs_without_query = np.squeeze(np.asarray(s))
         row, col = docs_without_query.shape
@@ -115,7 +117,7 @@ class Query:
         cols = self.folder.fileNames(self.folder.folder_names)
         cols.append("query")
 
-        dfb = pd.DataFrame(docs_with_query, columns=cols, index=count_vectorizer.get_feature_names())
+        dfb = pd.DataFrame(docs_with_query, columns=cols, index=self.document_class.preprocessing(count_vectorizer.get_feature_names()))
 
         print(dfb)
 

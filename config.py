@@ -3,7 +3,7 @@ import os
 
 
 class Folder:
-    folder_names = ["docs1", "docs2"]
+    folder_names = ["docs1"]
 
     def __init__(self):
         pass

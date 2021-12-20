@@ -3,17 +3,14 @@ from SearchEngine import SearchEngine
 from Query import Query
 from TF_IDF import TF_IDF
 
-
 searchEngine = SearchEngine()
 searchQuery = Query()
 tfIdf = TF_IDF()
 
-
 pos = searchEngine.createPositionalIndex()
-tf = tfIdf.computeTF()
+tf = tfIdf.compute_weight_TF()
 idf = tfIdf.computeIDF()
-tf_idf = tfIdf.computeTFIDF(tf, idf)
-
+tf_idf = tfIdf.computeTFIDF_weight(tf, idf)
 
 while True:
     print("""
@@ -24,6 +21,8 @@ while True:
         5- Compute IDF for each term
         6- Display TF.IDF  
         7- Compute Cosine Similarity between the query and documents
+        8- Document Length
+        9- Normalized TF.IDF
         0- Exit
         """)
 
@@ -54,8 +53,14 @@ while True:
         print(cosine_similarity)
         print("Rank documents based on Cosine Similarity")
         print(searchQuery.rank_documents_based_on_cosine_similarity(cosine_similarity))
+    elif choice == 8:
+        print(searchEngine.document_length(tf_idf))
+    elif choice == 9:
+        searchEngine.document_length(tf_idf)
+        n_tf_idf = tfIdf.normalized_tfidf(tf_idf, searchEngine.docs_length)
+        tfIdf.normalized_tf_idf_format(n_tf_idf)
     elif choice == 0:
         break
     else:
         print("Invalid Choice")
-    # print(tfIdf.computeDF(searchEngine.preprocessing(searchKey)[0]))
+

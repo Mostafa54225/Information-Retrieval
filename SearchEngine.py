@@ -4,7 +4,6 @@ from nltk.tokenize import word_tokenize
 from natsort import natsorted
 import string
 from config import Folder
-# from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.feature_extraction.text import CountVectorizer
 import numpy as np
 import pandas as pd
@@ -22,6 +21,7 @@ class SearchEngine:
     # Initialize the file mapping (fileno -> file name).
     file_map = {}
     folder = Folder()
+    docs_length = []
 
     def __init__(self):
         pass
@@ -49,13 +49,24 @@ class SearchEngine:
         stemmer = PorterStemmer()
         return [stemmer.stem(token) for token in tokens]
 
+    def remove_stop_words(self, words):
+        stop_words = ['i', 'me', 'my', 'myself', 'we', 'our', 'ours', 'ourselves', 'you', 'he', 'him', 'his', 'himself',
+                      'she', "she's", 'her', 'hers', 'herself', 'it', "it's", 'its', 'itself', 'they', 'them', 'their',
+                      'theirs', 'themselves']
+        return [word for word in words if word not in stop_words]
+
     def preprocessing(self, final_string):
+
         # Tokenize.
-        token_list = word_tokenize(final_string)
+        token_list = final_string
+        if type(final_string) != list:
+            token_list = word_tokenize(final_string)
         # remove punctuations
         token_list = self.remove_punctiations(token_list)
         # Change to lowercase.
         token_list = self.convert_tokens_to_lower_case(token_list)
+
+        token_list = self.remove_stop_words(token_list)
         # stem tokens
         token_list = self.stem_tokens(token_list)
         return token_list
@@ -113,21 +124,44 @@ class SearchEngine:
         df = pd.DataFrame(data, columns=['Term', 'Doc_Freq', ' Doc_Ids : [Positions] '])
         print(df)
 
+    # TF
     def countWordsInEachDoc(self):
         f = Folder()
         docs = f.getDocs()
 
-        count_vectorizer = CountVectorizer(stop_words='english')
+        # count_vectorizer = CountVectorizer(stop_words='english')
         count_vectorizer = CountVectorizer()
         sparse_matrix = count_vectorizer.fit_transform(docs)
-
         # OPTIONAL: Convert Sparse Matrix to Pandas Dataframe if you want to see the word frequencies.
         doc_term_matrix = sparse_matrix.todense()
-
         doc_term_matrix = np.transpose(doc_term_matrix)
-
         df = pd.DataFrame(doc_term_matrix,
                           columns=f.fileNames(self.folder.folder_names),
                           index=count_vectorizer.get_feature_names())
         # print(doc_term_matrix[0])   # keys => columns  index => terms  doc_term_matrix term array
         return df, doc_term_matrix
+
+    def document_length(self, tf_idf):
+        doc_length = {}
+        file_names = self.folder.fileNames(self.folder.folder_names)
+        for i in range(self.folder.numberOfDocs(self.folder.folder_names)):
+            arr = []
+            for term in tf_idf:
+                arr.append(tf_idf[term][0].get(i + 1))
+
+            result = sum(x ** 2 for x in arr) ** 0.5
+            doc_length[file_names[i]] = result
+
+        self.docs_length = doc_length
+        return self.doc_length_format(doc_length)
+
+    def doc_length_format(self, doc_length):
+        docs_list = list(doc_length.keys())
+
+        docs_length_No = []
+        for doc in docs_list:
+            docs_length_No.append(doc_length[doc])
+
+        data = {'Doc ID': docs_list, ' documents length ': docs_length_No}
+        df = pd.DataFrame(data, columns=['Doc ID', ' documents length '])
+        return df
